@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     allowedHosts: [
-      '5173-niezleziolk-fullstackop-ysl3v3ulmas.ws-eu118.gitpod.io'
+      '*'
     ]
   }
 })
