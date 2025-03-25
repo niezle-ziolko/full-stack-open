@@ -30,9 +30,9 @@ const PersonForm = ({ newName, newNumber, handleNameChange, handleNumberChange, 
 // Person Component
 const Person = ({ person, handleDelete }) => {
   return (
-    <li>
+    <li id={person._id}>
       {person.name} {person.number}
-      <button onClick={() => handleDelete(person.id)}>delete</button>
+      <button onClick={() => handleDelete(person._id)}>delete</button>
     </li>
   );
 };
@@ -42,7 +42,7 @@ const Persons = ({ filteredPersons, handleDelete }) => {
   return (
     <ul>
       {filteredPersons.map(person => (
-        <Person key={person.id} person={person} handleDelete={handleDelete} />
+        <Person key={person._id} person={person} handleDelete={handleDelete} />
       ))}
     </ul>
   );
@@ -91,9 +91,9 @@ const App = () => {
       if (window.confirm(`${newName} is already added to phonebook. Do you want to update the number?`)) {
         const updatedPerson = { ...existingPerson, number: newNumber };
         
-        personService.update(existingPerson.id, updatedPerson)
+        personService.update(existingPerson._id, updatedPerson)
           .then(returnedPerson => {
-            setPersons(persons.map(person => person.id !== existingPerson.id ? person : returnedPerson));
+            setPersons(persons.map(person => person._id !== existingPerson._id ? person : returnedPerson));
             setNewName(''); // Clear the input field for name
             setNewNumber(''); // Clear the input field for number
             setNotification(`Updated ${returnedPerson.name}'s number`); // Set notification
@@ -129,7 +129,7 @@ const App = () => {
     if (window.confirm('Are you sure you want to delete this person?')) {
       personService.remove(id)
         .then(() => {
-          setPersons(persons.filter(person => person.id !== id)); // Update the state to remove the deleted person
+          setPersons(persons.filter(person => person._id !== id)); // Update the state to remove the deleted person
           setNotification('Person deleted'); // Set notification
           setTimeout(() => setNotification(null), 5000); // Clear notification after 5 seconds
         })
@@ -143,7 +143,7 @@ const App = () => {
 
   // Filter persons based on the search term
   const filteredPersons = persons.filter(person =>
-    person.name.toLowerCase().includes(searchTerm.toLowerCase())
+    person?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
