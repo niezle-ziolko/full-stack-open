@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseUrl = 'http://localhost:3001/persons';
+const baseUrl = 'https://phonebook-backend.niezle-ziolko.workers.dev/api/persons';
 
 // Function to fetch all persons
 const getAll = () => {
