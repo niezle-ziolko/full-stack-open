@@ -19,7 +19,7 @@ mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/blogs', blogRouter);
+app.use('/api/blogs', authenticateToken, blogRouter);
 
 const PORT = process.env.PORT || 3003;
 
