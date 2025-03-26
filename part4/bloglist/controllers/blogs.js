@@ -1,5 +1,8 @@
 const express = require('express');
+
 const Blog = require('../models/blog');
+const User = require('../models/user');
+
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -14,14 +17,21 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Title and URL are required' });
   };
 
+  const users = await User.find({});
+  const user = users[0];
+
   const blog = new Blog({
     title,
     author,
     url,
-    likes: likes || 0
+    likes: likes || 0,
+    user: user._id
   });
 
   const savedBlog = await blog.save();
+  req.user.blogs = req.user.blogs.concat(savedBlog._id);
+  await req.user.save();
+
   res.status(201).json(savedBlog);
 });
 

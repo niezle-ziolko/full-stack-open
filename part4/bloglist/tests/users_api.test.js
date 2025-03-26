@@ -1,6 +1,7 @@
 const request = require('supertest');
 const { test, describe, before } = require('node:test');
 const assert = require('node:assert');
+
 const app = require('../index');
 const User = require('../models/user');
 
@@ -58,21 +59,16 @@ describe('User API', () => {
     const newUser = {
       username: 'testuser',
       password: 'password123',
-      name: 'Test User',
+      name: 'Test User'
     };
+
+    await request(app).post('/api/users').send(newUser).expect(400);
   
-    // Tworzenie użytkownika
-    await request(app).post('/api/users').send(newUser).expect(201);
-  
-    // Próba utworzenia użytkownika z tym samym username
     const response = await request(app)
       .post('/api/users')
       .send(newUser);
-  
-    // Sprawdzenie, czy odpowiedź ma status 400
+
     assert.strictEqual(response.status, 400);
-    // Sprawdzenie, czy komunikat o błędzie jest poprawny
     assert.strictEqual(response.body.error, 'Username must be unique');
   });
-  
 });

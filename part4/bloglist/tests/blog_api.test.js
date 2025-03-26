@@ -1,6 +1,13 @@
+const supertest = require('supertest');
 const express = require('express');
+const { test, describe, before } = require('node:test');
+
 const Blog = require('../models/blog');
+const User = require('../models/user');
+const app = require('../index');
+
 const router = express.Router();
+const api = supertest(app);
 
 router.get('/', async (req, res) => {
   const blogs = await Blog.find({});
@@ -61,6 +68,21 @@ router.put('/:id', async (req, res) => {
     console.error(error); // Log the error for debugging
     res.status(500).json({ error: 'An error occurred while updating the blog' });
   }
+});
+describe('Blog API', () => {
+  before(async () => {
+    await Blog.deleteMany({});
+    await User.deleteMany({});
+  });
+
+  test('fails to add blog without token', async () => {
+    const newBlog = { title: 'No Token Blog', author: 'Anonymous', url: 'https://notoken.com' };
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401);
+  });
 });
 
 module.exports = router;

@@ -5,8 +5,9 @@ const mongoose = require('mongoose');
 
 const Blog = require('./models/blog');
 const blogRouter = require('./controllers/blogs');
-
 const usersRouter = require('./controllers/users');
+const loginRouter = require('./controllers/login');
+const middleware = require('./utils/middleware/tokenExtractor');
 
 const app = express();
 
@@ -45,5 +46,8 @@ app.post('/api/blogs', async (req, res) => {
 
 app.use('/api/users', usersRouter);
 
+app.use('/api/login', loginRouter);
+
+app.use(middleware.tokenExtractor);
+
 module.exports = app;
-// Exercises 4.15.-4.23.
