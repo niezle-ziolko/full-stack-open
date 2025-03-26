@@ -7,7 +7,8 @@ const Blog = require('./models/blog');
 const blogRouter = require('./controllers/blogs');
 const usersRouter = require('./controllers/users');
 const loginRouter = require('./controllers/login');
-const middleware = require('./utils/middleware/tokenExtractor');
+
+const { authenticateToken } = require('./utils/auth');
 
 const app = express();
 
@@ -48,6 +49,6 @@ app.use('/api/users', usersRouter);
 
 app.use('/api/login', loginRouter);
 
-app.use(middleware.tokenExtractor);
+app.use(authenticateToken);
 
 module.exports = app;

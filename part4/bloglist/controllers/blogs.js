@@ -2,6 +2,7 @@ const express = require('express');
 
 const Blog = require('../models/blog');
 const User = require('../models/user');
+const { authenticateToken } = require('../utils/auth');
 
 const router = express.Router();
 
@@ -10,9 +11,10 @@ router.get('/', async (req, res) => {
   res.json(blogs);
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   const { title, author, url, likes } = req.body;
 
+  // Validate required fields
   if (!title || !url) {
     return res.status(400).json({ error: 'Title and URL are required' });
   };
@@ -20,6 +22,7 @@ router.post('/', async (req, res) => {
   const users = await User.find({});
   const user = users[0];
 
+  // Create the blog object
   const blog = new Blog({
     title,
     author,
@@ -28,11 +31,14 @@ router.post('/', async (req, res) => {
     user: user._id
   });
 
-  const savedBlog = await blog.save();
-  req.user.blogs = req.user.blogs.concat(savedBlog._id);
-  await req.user.save();
+  try {
+    const savedBlog = await blog.save();
 
-  res.status(201).json(savedBlog);
+    res.status(201).json(savedBlog);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while saving the blog' });
+  };
 });
 
 router.delete('/:id', async (req, res) => {

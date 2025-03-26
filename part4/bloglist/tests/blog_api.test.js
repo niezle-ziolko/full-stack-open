@@ -69,6 +69,7 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'An error occurred while updating the blog' });
   }
 });
+
 describe('Blog API', () => {
   before(async () => {
     await Blog.deleteMany({});
