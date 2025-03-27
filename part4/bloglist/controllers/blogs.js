@@ -7,7 +7,16 @@ const { authenticateToken } = require('../utils/auth');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const blogs = await Blog.find({});
+  const blogs = await Blog.find()
+  .populate('user', '_id username name')
+  .then(blogs => {
+    res.json(blogs);
+  })
+  .catch(err => {
+    console.error(err);
+    res.status(500).send('Server error');
+  });
+  
   res.json(blogs);
 });
 
@@ -28,7 +37,7 @@ router.post('/', authenticateToken, async (req, res) => {
     author,
     url,
     likes: likes || 0,
-    user: user._id
+    user: user
   });
 
   try {

@@ -21,7 +21,7 @@ mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/blogs', authenticateToken, blogRouter);
+app.use('/api/blogs', blogRouter);
 
 const PORT = process.env.PORT || 3003;
 
@@ -59,10 +59,8 @@ app.post('/api/blogs', authenticateToken, async (req, res) => {
   };
 });
 
-app.use('/api/users', usersRouter);
+app.use('/api/users', authenticateToken, usersRouter);
 
 app.use('/api/login', loginRouter);
-
-app.use(authenticateToken);
 
 module.exports = app;

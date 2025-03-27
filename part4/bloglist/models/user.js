@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// to JSON
 userSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
