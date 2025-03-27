@@ -35,7 +35,7 @@ app.post('/api/blogs', authenticateToken, async (req, res) => {
   // Validate required fields
   if (!title || !url) {
     return res.status(400).json({ error: 'Title and URL are required' });
-  };
+  }
 
   const users = await User.find({});
   const user = users[0];
@@ -51,11 +51,11 @@ app.post('/api/blogs', authenticateToken, async (req, res) => {
 
   try {
     const savedBlog = await blog.save();
-
-    res.status(201).json(savedBlog);
+    
+    return res.status(201).json(savedBlog);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred while saving the blog' });
+    return res.status(500).json({ error: 'An error occurred while saving the blog' });
   };
 });
 

@@ -95,7 +95,7 @@ const App = () => {
   const handleLike = async (blog) => {
     const updatedBlog = {
       ...blog,
-      likes: blog.likes + 1, // Increment the likes
+      likes: blog.likes + 1 // Increment the likes
     };
   
     try {
@@ -123,9 +123,35 @@ const App = () => {
       }
     } catch (error) {
       setNotification({ message: 'Server error', type: 'error' });
-    }
+    };
   
     setTimeout(() => setNotification(null), 5000);
+  };
+
+  const handleDelete = async (blog) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${blog.title}"?`);
+  
+    if (confirmDelete) {
+      try {
+        const response = await fetch(`https://3003-niezleziolk-fullstackop-7urkoi2nkbm.ws-eu118.gitpod.io/api/blogs/${blog._id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${user.token}`,
+          },
+        });
+  
+        if (response.ok) {
+          setBlogs(blogs.filter(b => b._id !== blog._id)); // Remove the deleted blog from the state
+          setNotification({ message: 'Blog deleted successfully.', type: 'success' });
+        } else {
+          setNotification({ message: 'Error deleting the blog.', type: 'error' });
+        }
+      } catch (error) {
+        setNotification({ message: 'Server error', type: 'error' });
+      }
+  
+      setTimeout(() => setNotification(null), 5000);
+    }
   };
 
   return (
@@ -163,9 +189,12 @@ const App = () => {
           <Togglable>
             <BlogForm onAddBlog={handleAddBlog} />
           </Togglable>
-          {Array.isArray(blogs) && blogs.map(blog => (
-            <Blog key={blog._id} blog={blog} onLike={handleLike} />
-          ))}
+          {Array.isArray(blogs) && blogs
+            .sort((a, b) => b.likes - a.likes)
+            .map(blog => (
+              <Blog key={blog._id} blog={blog} onLike={handleLike} onDelete={handleDelete} user={user} />
+            ))
+          }
         </div>
       )}
     </div>

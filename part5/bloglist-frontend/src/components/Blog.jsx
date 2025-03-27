@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Blog = ({ blog, onLike }) => {
+const Blog = ({ blog, onLike, onDelete, user }) => {
   const [visible, setVisible] = useState(false);
 
   const toggleDetails = () => {
@@ -26,6 +26,9 @@ const Blog = ({ blog, onLike }) => {
           <p>URL: {blog.url}</p>
           <p>Likes: {blog.likes} <button onClick={() => onLike(blog)}>like</button></p>
           <p>Added by: {blog.user.name}</p>
+          {user && user.username === blog.user.username && ( // Show delete button only if the user is the author
+            <button onClick={() => onDelete(blog)}>delete</button>
+          )}
         </div>
       )}
     </div>
