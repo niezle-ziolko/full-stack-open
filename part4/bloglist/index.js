@@ -4,6 +4,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 const Blog = require('./models/blog');
+const User = require('./models/user');
+
 const blogRouter = require('./controllers/blogs');
 const usersRouter = require('./controllers/users');
 const loginRouter = require('./controllers/login');
@@ -27,22 +29,34 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 });
 
-app.post('/api/blogs', async (req, res) => {
+app.post('/api/blogs', authenticateToken, async (req, res) => {
   const { title, author, url, likes } = req.body;
 
+  // Validate required fields
   if (!title || !url) {
     return res.status(400).json({ error: 'Title and URL are required' });
   };
 
+  const users = await User.find({});
+  const user = users[0];
+
+  // Create the blog object
   const blog = new Blog({
     title,
     author,
     url,
-    likes: likes || 0
+    likes: likes || 0,
+    user: user._id
   });
 
-  const savedBlog = await blog.save();
-  res.status(201).json(savedBlog);
+  try {
+    const savedBlog = await blog.save();
+
+    res.status(201).json(savedBlog);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while saving the blog' });
+  };
 });
 
 app.use('/api/users', usersRouter);
