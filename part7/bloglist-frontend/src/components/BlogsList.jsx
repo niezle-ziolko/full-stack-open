@@ -9,11 +9,11 @@ import blogService from '../services/blogs';
 
 import { setUser } from '../reducers/userReducer';
 import { setNotification } from '../reducers/notificationReducer';
-import { initializeBlogs, addBlog } from '../reducers/blogReducer';
+import { initializeBlogs, addNewBlog } from '../reducers/blogReducer';
 
 const BlogsList = () => {
   const dispatch = useDispatch();
-  const blogs = useSelector((state) => state.blogs);
+  const blogs = useSelector((state) => state.blogs.allBlogs);  // Accessing allBlogs from the Redux store
   const user = useSelector((state) => state.user);
 
   useEffect(() => {
@@ -24,14 +24,7 @@ const BlogsList = () => {
       dispatch(setUser(userData)); // Set user in Redux store
     }
 
-    blogService
-      .getAll()
-      .then((fetchedBlogs) => {
-        dispatch(initializeBlogs(fetchedBlogs));
-      })
-      .catch(() => {
-        dispatch(setNotification('Error fetching blogs', 'error'));
-      });
+    dispatch(initializeBlogs()); // Fetch and initialize blogs from the Redux store
   }, [dispatch]);
 
   const handleAddBlog = async (newBlog) => {
@@ -41,9 +34,13 @@ const BlogsList = () => {
       url: newBlog.url,
     };
 
+    if (!user || !user.token) {
+      dispatch(setNotification('User not authenticated', 'error'));
+      return;
+    }
+
     try {
-      const addedBlog = await blogService.addBlog(blogData, user.token);
-      dispatch(addBlog(addedBlog));
+      dispatch(addNewBlog(blogData)); // Dispatch the action to add a new blog
       dispatch(setNotification('Blog added successfully.', 'success'));
     } catch (error) {
       dispatch(setNotification('Error adding a blog.', 'error'));

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseUrl = 'https://3003-niezleziolk-fullstackop-75vdjot4u3u.ws-eu118.gitpod.io/api/blogs';
+const baseUrl = `${import.meta.env.VITE_HOST}/api/blogs`;
 
 // Fetch blog by ID
 const getBlog = async (postId) => {

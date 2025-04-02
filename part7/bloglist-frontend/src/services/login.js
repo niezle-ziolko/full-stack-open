@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const login = async (username, password) => {
   try {
-    const response = await axios.post('https://3003-niezleziolk-fullstackop-75vdjot4u3u.ws-eu118.gitpod.io/api/login', {
+    const response = await axios.post(`${import.meta.env.VITE_HOST}/api/login`, {
       username,
       password
     });

@@ -23,7 +23,10 @@ const Header = () => {
             {user?.username ? `${user.username} is logged in` : 'No user is logged in'}
           </li>
           <li>
-            <Link to={'/users'}>User list</Link>
+            <Link to={'/'}>Home page</Link>
+          </li>
+          <li>
+            <Link to={'/users'}>Users list</Link>
           </li>
         </ul>
       </nav>

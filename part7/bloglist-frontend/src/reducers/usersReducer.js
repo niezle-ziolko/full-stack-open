@@ -14,8 +14,8 @@ const userSlice = createSlice({
     },
     setSingleUser(state, action) {
       state.singleUser = action.payload;
-    },
-  },
+    }
+  }
 });
 
 export const { setUsers, setSingleUser } = userSlice.actions;
