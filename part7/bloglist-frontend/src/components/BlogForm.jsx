@@ -46,13 +46,15 @@ const BlogForm = ({ onAddBlog }) => {
           onChange={({ target }) => setNewBlogUrl(target.value)}
         />
       </div>
-      <button className="create-button" type="submit">create</button>
+      <button className="create-button" type="submit">
+        create
+      </button>
     </form>
   );
 };
 
 BlogForm.propTypes = {
-  onAddBlog: PropTypes.func.isRequired
+  onAddBlog: PropTypes.func.isRequired,
 };
 
 export default BlogForm;

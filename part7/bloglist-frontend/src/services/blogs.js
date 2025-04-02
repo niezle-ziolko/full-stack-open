@@ -1,16 +1,27 @@
 import axios from 'axios';
 
-const baseUrl = 'http://localhost:3003/api/blogs';
+const baseUrl = 'https://3003-niezleziolk-fullstackop-75vdjot4u3u.ws-eu118.gitpod.io/api/blogs';
+
+// Fetch blog by ID
+const getBlog = async (postId) => {
+  const response = await axios.get(`${baseUrl}/${postId}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).token : ''}`,
+    }
+  });
+
+  return response.data;
+};
 
 // Fetch all blogs
 const getAll = () => {
   const request = axios.get(baseUrl, {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).token : ''}`
+      Authorization: `Bearer ${localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).token : ''}`,
     }
   });
-  
-  return request.then(response => response.data);
+
+  return request.then((response) => response.data);
 };
 
 // Add new blog
@@ -18,11 +29,11 @@ const addBlog = (newBlog, token) => {
   const request = axios.post(baseUrl, newBlog, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   });
-  
-  return request.then(response => response.data);
+
+  return request.then((response) => response.data);
 };
 
 // Like blog
@@ -30,22 +41,22 @@ const likeBlog = (blogId, updatedBlog, token) => {
   const request = axios.put(`${baseUrl}/${blogId}`, updatedBlog, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   });
-  
-  return request.then(response => response.data);
+
+  return request.then((response) => response.data);
 };
 
 // Delete blog
 const deleteBlog = (blogId, token) => {
   const request = axios.delete(`${baseUrl}/${blogId}`, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
-  
-  return request.then(response => response.data);
+
+  return request.then((response) => response.data);
 };
 
-export default { getAll, addBlog, likeBlog, deleteBlog };
+export default { getBlog, getAll, addBlog, likeBlog, deleteBlog };

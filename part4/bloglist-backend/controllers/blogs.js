@@ -16,17 +16,36 @@ router.get('/', async (req, res) => {
   };
 });
 
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const blog = await Blog.findById(id).populate('user', '_id username name');
+
+    if (!blog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    };
+
+    return res.status(200).json(blog);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'An error occurred while retrieving the blog' });
+  };
+});
+
 router.post('/', authenticateToken, async (req, res) => {
   const { title, author, url, likes } = req.body;
 
   if (!title || !url) {
     return res.status(400).json({ error: 'Title and URL are required' });
-  };
+  }
 
   try {
-    const user = await User.findOne();
+    // Assuming the user is obtained from the token and is available in req.user
+    const user = req.user; // This should be the authenticated user from the token
+
     if (!user) {
-      return res.status(400).json({ error: 'No users found' });
+      return res.status(400).json({ error: 'No user found' });
     }
 
     const blog = new Blog({
@@ -34,10 +53,17 @@ router.post('/', authenticateToken, async (req, res) => {
       author,
       url,
       likes: likes || 0,
-      user: user
+      user: user // Use the user's ID to associate the blog with the user
     });
 
     const savedBlog = await blog.save();
+
+    // Increment the createdPosts count for the user
+    await User.findByIdAndUpdate(user._id, { 
+      $inc: { created: 1 }, 
+      $push: { posts: savedBlog._id } // Add the blog ID to the user's posts array
+    });
+
     return res.status(201).json(savedBlog);
   } catch (error) {
     console.error(error);
@@ -49,11 +75,24 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedBlog = await Blog.findByIdAndDelete(id);
+    // Find the blog post to be deleted
+    const deletedBlog = await Blog.findById(id);
 
     if (!deletedBlog) {
       return res.status(404).json({ error: 'Blog not found' });
-    };
+    }
+
+    // Get the user associated with the blog post
+    const userId = deletedBlog.user; // Assuming 'user' field in Blog references the User
+
+    // Delete the blog post
+    await Blog.findByIdAndDelete(id);
+
+    // Decrement the createdPosts count for the user
+    await User.findByIdAndUpdate(userId, { 
+      $inc: { created: -1 }, 
+      $pull: { posts: id } // Remove the blog ID from the user's posts array
+    });
 
     res.status(204).end(); // No content
   } catch (error) {
@@ -71,7 +110,7 @@ router.put('/:id', async (req, res) => {
       id,
       { likes },
       { new: true, runValidators: true }
-    );
+    ).populate('user', '_id username name');
 
     if (!updatedBlog) {
       return res.status(404).json({ error: 'Blog not found' });

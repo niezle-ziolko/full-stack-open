@@ -12,11 +12,7 @@ const Togglable = (props) => {
       <button onClick={toggleVisibility}>
         {visible ? 'cancel' : 'create new blog'}
       </button>
-      {visible && (
-        <div>
-          {props.children}
-        </div>
-      )}
+      {visible && <div>{props.children}</div>}
     </div>
   );
 };

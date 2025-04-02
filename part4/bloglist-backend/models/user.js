@@ -10,7 +10,15 @@ const userSchema = new mongoose.Schema({
   passwordHash: {
     type: String,
     required: true,
-  }
+  },
+  created: {
+    type: Number,
+    default: 0, // Initialize with 0
+  },
+  posts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Blog'
+  }]
 });
 
 // to JSON

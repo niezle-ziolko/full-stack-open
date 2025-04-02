@@ -1,26 +1,23 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
-const Notification = ({ message, type }) => {
-  if (!message) return null;
+const Notification = () => {
+  const notification = useSelector((state) => state.notification);
+
+  if (!notification.message) return null;
 
   const notificationStyle = {
-    color: type === 'success' ? 'green' : 'red',
-    border: `1px solid ${type === 'success' ? 'green' : 'red'}`,
+    color: notification.type === 'success' ? 'green' : 'red',
+    border: `1px solid ${notification.type === 'success' ? 'green' : 'red'}`,
     padding: '10px',
-    margin: '10px 0'
+    margin: '10px 0',
   };
 
   return (
-    <div className={`notification ${type}`} style={notificationStyle}>
-      {message}
+    <div className={`notification ${notification.type}`} style={notificationStyle}>
+      {notification.message}
     </div>
   );
-};
-
-Notification.propTypes = {
-  message: PropTypes.string,
-  type: PropTypes.oneOf(['success', 'error']).isRequired
 };
 
 export default Notification;

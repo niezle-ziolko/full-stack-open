@@ -1,4 +1,35 @@
+import React from 'react';
+import { Provider } from 'react-redux';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+import App from './App';
+import store from './store';
+import Header from './components/Header';
+import UsersList from './components/UsersList';
+import UserDetails from './components/UserDetails';
+import Notification from './components/Notification';
+
+const Main = () => {
+  return (
+    <>
+      <Header />
+      <Notification />
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/users" element={<UsersList />} />
+        <Route path="/users/:id" element={<UserDetails />} />
+      </Routes>
+    </>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
+  <Provider store={store}>
+    <Router>
+      <Main />
+    </Router>
+  </Provider>
+);
