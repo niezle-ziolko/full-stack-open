@@ -27,15 +27,10 @@ blogSchema.methods.toJSON = function() {
       return {
         _id: comment._id,
         content: comment.content,
-        user: comment.user ? {
-          _id: comment.user._id,
-          username: comment.user.username,
-          name: comment.user.name
-        } : null,
         createdAt: comment.createdAt
       };
     });
-  }
+  };
 
   return blogObject;
 };

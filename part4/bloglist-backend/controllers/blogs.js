@@ -2,6 +2,7 @@ const express = require('express');
 
 const Blog = require('../models/blog');
 const User = require('../models/user');
+const Comment = require('../models/comment');
 const { authenticateToken } = require('../utils/auth');
 
 const router = express.Router();
@@ -30,6 +31,31 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'An error occurred while retrieving the blog' });
+  };
+});
+
+router.post('/:id/comments', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ error: 'Comment content is required' });
+  }
+
+  try {
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    const newComment = new Comment({ content });
+    blog.comments.push(newComment);
+    await blog.save();
+
+    return res.status(201).json(newComment);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'An error occurred while adding the comment' });
   };
 });
 

@@ -72,7 +72,7 @@ const BlogDetails = () => {
         </button>
       </p>
       <p>Added by: 
-        <Link to={`/users/${blog.user._id}`}>{blog.user.name}</Link>
+        <Link to={`/users/${blog.user._id}`}>{blog.user.username}</Link>
       </p>
       <button className="delete-button" onClick={handleDelete}>
         delete
