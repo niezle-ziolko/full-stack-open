@@ -20,13 +20,13 @@ const Header = () => {
       <nav>
         <ul>
           <li>
+            <Link to={'/'}>blogs</Link>
+          </li>
+          <li>
+            <Link to={'/users'}>users</Link>
+          </li>
+          <li>
             {user?.username ? `${user.username} is logged in` : 'No user is logged in'}
-          </li>
-          <li>
-            <Link to={'/'}>Home page</Link>
-          </li>
-          <li>
-            <Link to={'/users'}>Users list</Link>
           </li>
         </ul>
       </nav>

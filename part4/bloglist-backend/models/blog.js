@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
+const Comment = require('./comment');
 
 const blogSchema = new mongoose.Schema({
-  title: String,
+  title: { type: String, required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   likes: { type: Number, default: 0 },
-  author: String,
-  url: String
+  author: { type: String, required: true },
+  url: { type: String, required: true },
+  comments: [Comment.schema]
 });
 
 blogSchema.methods.toJSON = function() {
@@ -18,7 +20,22 @@ blogSchema.methods.toJSON = function() {
       username: blogObject.user.username,
       name: blogObject.user.name
     };
-  };
+  }
+
+  if (blogObject.comments) {
+    blogObject.comments = blogObject.comments.map(comment => {
+      return {
+        _id: comment._id,
+        content: comment.content,
+        user: comment.user ? {
+          _id: comment.user._id,
+          username: comment.user.username,
+          name: comment.user.name
+        } : null,
+        createdAt: comment.createdAt
+      };
+    });
+  }
 
   return blogObject;
 };

@@ -11,7 +11,7 @@ const blogReducer = (state = { allBlogs: [], singleBlog: null }, action) => {
       return { ...state, allBlogs: [...state.allBlogs, action.data] };
     default:
       return state;
-  }
+  };
 };
 
 export const initializeBlogs = () => {
@@ -24,7 +24,7 @@ export const initializeBlogs = () => {
       });
     } catch (error) {
       dispatch(setNotification('Error fetching blogs', 'error'));
-    }
+    };
   };
 };
 
@@ -38,7 +38,7 @@ export const fetchBlog = (postId) => {
       });
     } catch (error) {
       dispatch(setNotification('Error fetching blog', 'error'));
-    }
+    };
   };
 };
 
@@ -50,7 +50,7 @@ export const addNewBlog = (newBlog) => {
     if (!user || !user.token) {
       dispatch(setNotification('User is not authenticated', 'error'));
       return;
-    }
+    };
 
     try {
       const createdBlog = await blogService.addBlog(newBlog, user.token);
@@ -61,7 +61,7 @@ export const addNewBlog = (newBlog) => {
       dispatch(setNotification('Blog added successfully', 'success'));
     } catch (error) {
       dispatch(setNotification('Error adding blog', 'error'));
-    }
+    };
   };
 };
 

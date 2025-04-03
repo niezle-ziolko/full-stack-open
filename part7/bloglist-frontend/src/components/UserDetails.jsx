@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { fetchUser } from '../reducers/usersReducer';
+import { useDispatch, useSelector } from 'react-redux';
+
 import blogService from '../services/blogs';
+import { fetchUser } from '../reducers/usersReducer';
 
 const UserDetails = () => {
   const { id } = useParams();
@@ -54,8 +56,8 @@ const UserDetails = () => {
       <ul>
         {blogs.length > 0 ? (
           blogs.map((blog) => (
-            <li key={blog.id}>
-              <strong>{blog.title}</strong>
+            <li key={blog._id}>
+              <Link to={`/blogs/${blog._id}`}><strong>{blog.title}</strong></Link>
             </li>
           ))
         ) : (

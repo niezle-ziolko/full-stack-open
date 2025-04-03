@@ -8,6 +8,7 @@ import store from './store';
 import Header from './components/Header';
 import UsersList from './components/UsersList';
 import UserDetails from './components/UserDetails';
+import BlogDetails from './components/BlogDetails';
 import Notification from './components/Notification';
 
 const Main = () => {
@@ -19,6 +20,7 @@ const Main = () => {
         <Route path="/" element={<App />} />
         <Route path="/users" element={<UsersList />} />
         <Route path="/users/:id" element={<UserDetails />} />
+        <Route path="/blogs/:id" element={<BlogDetails />} />
       </Routes>
     </>
   );

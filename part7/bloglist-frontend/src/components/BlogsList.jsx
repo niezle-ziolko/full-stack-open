@@ -47,35 +47,7 @@ const BlogsList = () => {
     }
   };
 
-  const handleLike = async (blog) => {
-    const updatedBlog = {
-      ...blog,
-      likes: blog.likes + 1
-    };
-
-    try {
-      const returnedBlog = await blogService.likeBlog(blog._id, updatedBlog, user.token);
-      console.log('Returned blog:', returnedBlog);
-      dispatch(initializeBlogs(blogs.map((b) => (b._id === returnedBlog._id ? returnedBlog : b))));
-      dispatch(setNotification('Blog liked successfully.', 'success'));
-    } catch (error) {
-      dispatch(setNotification('Error liking the blog.', 'error'));
-    }
-  };
-
-  const handleDelete = async (blog) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${blog.title}"?`);
-
-    if (confirmDelete) {
-      try {
-        await blogService.deleteBlog(blog._id, user.token);
-        dispatch(initializeBlogs(blogs.filter((b) => b._id !== blog._id)));
-        dispatch(setNotification('Blog deleted successfully.', 'success'));
-      } catch (error) {
-        dispatch(setNotification('Error deleting the blog.', 'error'));
-      }
-    }
-  };
+  
 
   if (!blogs) {
     return <div>Loading...</div>;
@@ -94,9 +66,6 @@ const BlogsList = () => {
             <Blog
               key={blog._id}
               blog={blog}
-              onLike={handleLike}
-              onDelete={handleDelete}
-              user={user}
             />
           ))
       }
