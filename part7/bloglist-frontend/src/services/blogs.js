@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const baseUrl = `${import.meta.env.VITE_HOST}/api/blogs`;
 
@@ -6,7 +6,7 @@ const baseUrl = `${import.meta.env.VITE_HOST}/api/blogs`;
 const getBlog = async (postId) => {
   const response = await axios.get(`${baseUrl}/${postId}`, {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).token : ''}`,
+      Authorization: `Bearer ${localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).token : ""}`
     }
   });
 
@@ -17,7 +17,7 @@ const getBlog = async (postId) => {
 const getAll = () => {
   const request = axios.get(baseUrl, {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).token : ''}`,
+      Authorization: `Bearer ${localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).token : ""}`
     }
   });
 
@@ -29,8 +29,8 @@ const addBlog = (newBlog, token) => {
   const request = axios.post(baseUrl, newBlog, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+      "Content-Type": "application/json"
+    }
   });
 
   return request.then((response) => response.data);
@@ -41,8 +41,8 @@ const likeBlog = (blogId, updatedBlog, token) => {
   const request = axios.put(`${baseUrl}/${blogId}`, updatedBlog, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+      "Content-Type": "application/json"
+    }
   });
 
   return request.then((response) => response.data);
@@ -52,11 +52,23 @@ const likeBlog = (blogId, updatedBlog, token) => {
 const deleteBlog = (blogId, token) => {
   const request = axios.delete(`${baseUrl}/${blogId}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
-    },
+      Authorization: `Bearer ${token}`
+    }
   });
 
   return request.then((response) => response.data);
 };
 
-export default { getBlog, getAll, addBlog, likeBlog, deleteBlog };
+// Add comment blog
+const addComment = (blogId, newComment, token) => {
+  const request = axios.post(`${baseUrl}/${blogId}/comments`, newComment, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
+  });
+
+  return request.then((response) => response.data);
+};
+
+export default { getBlog, getAll, addBlog, likeBlog, deleteBlog, addComment };

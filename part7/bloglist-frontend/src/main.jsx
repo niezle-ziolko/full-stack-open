@@ -1,15 +1,15 @@
-import React from 'react';
-import { Provider } from 'react-redux';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from "react";
+import { Provider } from "react-redux";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import App from './App';
-import store from './store';
-import Header from './components/Header';
-import UsersList from './components/UsersList';
-import UserDetails from './components/UserDetails';
-import BlogDetails from './components/BlogDetails';
-import Notification from './components/Notification';
+import App from "./App";
+import store from "./store";
+import Header from "./components/Header";
+import UsersList from "./components/UsersList";
+import UserDetails from "./components/UserDetails";
+import BlogDetails from "./components/BlogDetails";
+import Notification from "./components/Notification";
 
 const Main = () => {
   return (
@@ -26,7 +26,7 @@ const Main = () => {
   );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <Provider store={store}>

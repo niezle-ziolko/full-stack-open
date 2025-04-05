@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
-import blogService from '../services/blogs';
-import { fetchUser } from '../reducers/usersReducer';
+import Loading from "./Loading";
+
+import blogService from "../services/blogs";
+import { fetchUser } from "../reducers/usersReducer";
 
 const UserDetails = () => {
   const { id } = useParams();
@@ -30,40 +32,50 @@ const UserDetails = () => {
           );
           setBlogs(blogTitles);
         } catch (err) {
-          setError('Failed to fetch blog titles');
+          setError("Failed to fetch blog titles");
         } finally {
           setLoading(false);
-        }
+        };
       };
       fetchBlogs();
-    }
+    };
   }, [dispatch, user]);
 
-  if (!user) {
-    return <div>Loading user details...</div>;
-  }
+  if (!user || loading) {
+    return <Loading />;
+  };
 
   return (
-    <div>
-      <h2>User Details</h2>
-      <p><strong>Name:</strong> {user.name}</p>
-      <p><strong>Blogs created:</strong> {user.created}</p>
+    <div className="container py-4 d-flex gap-4">
+      <div className="w-100">
+        <h4>User Details</h4>
+        <p><span className="text-muted mb-0">Name:</span> {user.name}</p>
+        <p><span className="text-muted mb-0">Username:</span> {user.username}</p>
+        <p><span className="text-muted mb-0">Blogs created:</span> {user.created}</p>
+      </div>
 
-      <h3>Blogs:</h3>
-      {loading && <p>Loading blogs...</p>}
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      <div className="w-100">
+        <h4 className="mb-3">Blogs:</h4>
+        {error && <p style={{ color: "red" }}>Error: {error}</p>}
       
-      <ul>
-        {blogs.length > 0 ? (
-          blogs.map((blog) => (
-            <li key={blog._id}>
-              <Link to={`/blogs/${blog._id}`}><strong>{blog.title}</strong></Link>
-            </li>
-          ))
-        ) : (
-          <p>No blogs available.</p>
-        )}
-      </ul>
+        <ul className="d-flex flex-column gap-3 ps-0 mb-0">
+          {blogs.length > 0 ? (
+            blogs.map((blog) => (
+              <li className="d-block" key={blog._id}>
+                <div className="blog card border p-2">
+                  <div className="card-body p-2">
+                    <Link to={`/blogs/${blog._id}`} className="text-decoration-none text-primary">
+                      <h5 className="card-title mb-0">{blog.title}</h5>
+                    </Link>
+                  </div>
+                </div>
+              </li>
+            ))
+          ) : (
+            <p>No blogs available.</p>
+          )}
+        </ul>
+      </div>
     </div>
   );
 };

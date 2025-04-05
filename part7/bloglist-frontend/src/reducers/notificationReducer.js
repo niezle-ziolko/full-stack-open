@@ -5,12 +5,12 @@ const initialState = {
 
 const notificationReducer = (state = initialState, action) => {
   switch (action.type) {
-    case 'SET_NOTIFICATION':
+    case "SET_NOTIFICATION":
       return {
         message: action.payload.message,
         type: action.payload.type
       };
-    case 'CLEAR_NOTIFICATION':
+    case "CLEAR_NOTIFICATION":
       return initialState;
     default:
       return state;
@@ -20,11 +20,11 @@ const notificationReducer = (state = initialState, action) => {
 export const setNotification = (message, type) => {
   return (dispatch) => {
     dispatch({
-      type: 'SET_NOTIFICATION',
+      type: "SET_NOTIFICATION",
       payload: { message, type }
     });
     setTimeout(() => {
-      dispatch({ type: 'CLEAR_NOTIFICATION' });
+      dispatch({ type: "CLEAR_NOTIFICATION" });
     }, 5000);
   };
 };

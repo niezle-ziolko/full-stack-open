@@ -10,9 +10,6 @@ export default defineConfig({
         target: 'http://localhost:3003',
         changeOrigin: true,
       },
-    },
-    allowedHosts: [
-      '5173-niezleziolk-fullstackop-75vdjot4u3u.ws-eu118.gitpod.io'
-    ]
+    }
   },
 });
