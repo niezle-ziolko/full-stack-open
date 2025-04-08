@@ -47,6 +47,7 @@ const NewBook = () => {
       setPublished('');
       setGenres([]);
       setGenre('');
+      setPage('books');
     } catch (error) {
       console.error("Error adding book:", error);
     };
@@ -59,7 +60,7 @@ const NewBook = () => {
 
   return (
     <div>
-      <h2>add book</h2>
+      <h2>Add book</h2>
       <form onSubmit={submit}>
         <div>
           title <input value={title} onChange={({ target }) => setTitle(target.value)} />

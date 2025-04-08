@@ -8,7 +8,7 @@ import {
 } from '@apollo/client'
 
 const client = new ApolloClient({
-  uri: 'https://4000-niezleziolk-fullstackop-onkb1acmxin.ws-eu118.gitpod.io/graphql',
+  uri: `${import.meta.env.VITE_API_URL}/graphql`,
   cache: new InMemoryCache(),
 })
 

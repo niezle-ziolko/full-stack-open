@@ -1,54 +1,66 @@
+import { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 
 import { MY_GENRES, FILTER_BOOKS } from './queries';
 
 const Recommendations = () => {
-  const { loading: loadingGenres, data: genresData } = useQuery(MY_GENRES);
-  const favoriteGenres = genresData && genresData.myGenres ? genresData.myGenres : [];
+  const [favoriteGenre, setFavoriteGenre] = useState(null);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
 
-  const { loading: loadingBooks, data: booksData } = useQuery(FILTER_BOOKS, {
-    variables: { genre: favoriteGenres.length > 0 ? favoriteGenres[0] : null },
-    skip: favoriteGenres.length === 0
+  useEffect(() => {
+    if (user) {
+      setFavoriteGenre(user.favoriteGenre);
+    }
+  }, [user]);
+
+  const { loading, error, data } = useQuery(MY_GENRES, {
+    context: {
+      headers: {
+        Authorization: `Bearer ${user?.token}`,
+      },
+    },
+    onCompleted: (data) => {
+      const updatedUser = { ...user, favoriteGenre: data.me.favoriteGenre };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    }
   });
 
-  const books = booksData ? booksData.allBooks : [];
+  const { loading: booksLoading, error: booksError, data: booksData } = useQuery(FILTER_BOOKS, {
+    variables: { genre: favoriteGenre },
+    skip: !favoriteGenre
+  });
 
-  if (loadingGenres || loadingBooks) {
+  if (loading || booksLoading) {
     return <div>Loading...</div>;
+  };
+
+  if (error || booksError) {
+    return <div>Error: {error.message}</div>;
+  };
+
+  if (booksData && booksData.allBooks.length > 0) {
+    return (
+      <div>
+        <h2>Recommendations:</h2>
+        <ul>
+          {booksData.allBooks.map((book) => (
+            <li key={book.id}>{book.title}</li>
+          ))}
+        </ul>
+      </div>
+    );
   };
 
   return (
     <div>
-      <h2>Favorite Books</h2>
-      {favoriteGenres.length === 0 ? (
-        <p>No favorite genres found.</p>
+      <h2>Recommendations:</h2>
+      {favoriteGenre ? (
+        <p>{favoriteGenre}</p>
       ) : (
-        <div>
-          <h3>Genres:</h3>
-          <ul>
-            {favoriteGenres.map((genre) => (
-              <li key={genre}>{genre}</li>
-            ))}
-          </ul>
-          <h3>Books:</h3>
-          <table>
-            <tbody>
-              <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Published</th>
-              </tr>
-              {books.map((b) => (
-                <tr key={b.id}>
-                  <td>{b.title}</td>
-                  <td>{b.author.name}</td>
-                  <td>{b.published}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <p>You don't have a favorite genre.</p>
       )}
+      <p>No books available for your favorite genre.</p>
     </div>
   );
 };

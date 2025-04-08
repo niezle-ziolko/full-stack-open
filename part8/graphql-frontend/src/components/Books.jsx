@@ -1,17 +1,19 @@
+import { useState } from 'react';
 import { useQuery } from '@apollo/client';
+
 import { ALL_BOOKS, ALL_GENRES, FILTER_BOOKS } from './queries';
-import React from 'react';
 
 const Books = () => {
   const { loading: loadingGenres, data: genresData } = useQuery(ALL_GENRES);
-  const [selectedGenre, setSelectedGenre] = React.useState(null);
+  const [selectedGenre, setSelectedGenre] = useState(null);
 
   const { loading: loadingBooks, data: booksData } = useQuery(selectedGenre ? FILTER_BOOKS : ALL_BOOKS, {
     variables: selectedGenre ? { genre: selectedGenre } : undefined,
   });
 
-  if (loadingGenres) return <div>Loading genres...</div>;
-  if (loadingBooks) return <div>Loading books...</div>;
+  if (loadingGenres || loadingBooks) {
+    return <div>Loading...</div>;
+  };
 
   const genres = genresData.allGenres;
   const books = booksData.allBooks;

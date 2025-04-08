@@ -28,12 +28,13 @@ const LoginForm = ({ setUser, setPage }) => {
       setUsername('');
       setPassword('');
       setLoginSuccess(true);
-      setPage('authors');
+      setPage('books');
     };
   }, [result.data, username, password, setUser]);
 
   return (
     <form onSubmit={handleLogin}>
+      <h2>Log in</h2>
       <div>
         username
         <input
