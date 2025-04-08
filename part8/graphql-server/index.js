@@ -1,65 +1,24 @@
+require('dotenv').config();
 const { createYoga, createSchema } = require("graphql-yoga");
 const { createServer } = require("http");
+const { GraphQLError } = require("graphql");
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
-let books = [
-  {
-    title: "Clean Code",
-    published: 2008,
-    author: "Robert Martin",
-    genres: ["refactoring"]
-  },
-  {
-    title: "Agile software development",
-    published: 2002,
-    author: "Robert Martin",
-    genres: ["agile", "patterns"]
-  },
-  {
-    title: "Refactoring, edition 2",
-    published: 2018,
-    author: "Martin Fowler",
-    genres: ["refactoring"]
-  },
-  {
-    title: "Refactoring to patterns",
-    published: 2008,
-    author: "Joshua Kerievsky",
-    genres: ["refactoring"]
-  },
-  {
-    title: "Practical Object-Oriented Design, An Agile Primer Using Ruby",
-    published: 2012,
-    author: "Sandi Metz",
-    genres: ["refactoring"]
-  },
-  {
-    title: "Crime and punishment",
-    published: 1866,
-    author: "Fyodor Dostoevsky",
-    genres: ["classic", "crime"]
-  },
-  {
-    title: "The Demon",
-    published: 1872,
-    author: "Fyodor Dostoevsky",
-    genres: ["classic", "revolution"]
-  }
-];
+const { Author, Book, User } = require('./models'); // Ensure User model is imported
 
-let authors = [
-  { name: "Robert Martin", born: 1952 },
-  { name: "Martin Fowler", born: 1963 },
-  { name: "Fyodor Dostoevsky", born: 1821 },
-  { name: "Joshua Kerievsky" },
-  { name: "Sandi Metz" }
-];
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ama5n.mongodb.net/?retryWrites=true&w=majority&appName=${process.env.DB_NAME}`)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Error connecting to MongoDB:', err));
 
 const typeDefs = /* GraphQL */ `
   type Book {
     title: String!
     published: Int!
-    author: String!
+    author: Author!
     genres: [String!]!
+    id: ID!
   }
 
   type Author {
@@ -68,11 +27,23 @@ const typeDefs = /* GraphQL */ `
     bookCount: Int!
   }
 
+  type User {
+    username: String!
+    favoriteGenre: String!
+    id: ID!
+  }
+
+  type Token {
+    token: String!
+  }
+
   type Query {
     bookCount: Int!
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+    allGenres: [String!]!  # Dodano nowe zapytanie
+    me: User
   }
 
   type Mutation {
@@ -81,60 +52,185 @@ const typeDefs = /* GraphQL */ `
       author: String!
       published: Int!
       genres: [String!]!
-    ): Book
+    ): Book!
 
     editAuthor(name: String!, setBornTo: Int!): Author
+
+    createUser(
+      username: String!
+      favoriteGenre: String!
+      password: String!
+    ): User
+
+    login(
+      username: String!
+      password: String!
+    ): Token
   }
 `;
 
+const JWT_SECRET = process.env.JWT_SECRET || '12345'; // Use a secure secret in production
+
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
-    allBooks: (root, args) => {
-      return books.filter(book => {
-        return (!args.author || book.author === args.author) &&
-               (!args.genre || book.genres.includes(args.genre))
-      });
+    bookCount: async () => await Book.countDocuments(),
+    authorCount: async () => await Author.countDocuments(),
+    allBooks: async (root, args) => {
+      const filter = {};
+
+      if (args.author) {
+        const author = await Author.findOne({ name: args.author });
+        filter.author = author ? author._id : null;
+      }
+
+      if (args.genre) {
+        filter.genres = { $in: [args.genre] };
+      }
+
+      return await Book.find(filter).populate('author');
     },
-    allAuthors: () => {
-      return authors.map(author => {
-        const count = books.filter(book => book.author === author.name).length
-        return {
-          name: author.name,
-          born: author.born || null,
-          bookCount: count
-        }
+    allAuthors: async () => {
+      const authors = await Author.find();
+      return Promise.all(authors.map(async (author) => ({
+        name: author.name,
+        born: author.born || null,
+        bookCount: await Book.countDocuments({ author: author._id })
+      })));
+    },
+    allGenres: async () => {
+      const books = await Book.find();
+      const genres = new Set(); // Używamy Set do unikalnych gatunków
+
+      books.forEach(book => {
+        book.genres.forEach(genre => genres.add(genre));
       });
+
+      return Array.from(genres); // Zwracamy unikalne gatunki jako tablicę
+    },
+    me: (root, args, context) => {
+      return context.currentUser; // Return the current user from context
     }
   },
 
   Mutation: {
-    addBook: (root, args) => {
-      const newBook = { ...args }
-      books.push(newBook)
+    addBook: async (root, args, context) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('Not authenticated');
+      };
+  
+      if (args.title.length < 3) {
+        throw new GraphQLError('Book title must be at least 3 characters long.');
+      };
+      
+      if (args.genres.length === 0) {
+        throw new GraphQLError('At least one genre must be provided.');
+      };
+  
+      let author = await Author.findOne({ name: args.author });
+      
+      if (!author) {
+        if (args.author.length < 3) {
+          throw new GraphQLError('Author name must be at least 3 characters long.');
+        };
 
-      if (!authors.some(a => a.name === args.author)) {
-        authors.push({ name: args.author })
+        author = new Author({ name: args.author });
+        await author.save();
+      };
+  
+      const newBook = new Book({ 
+        title: args.title,
+        published: args.published, 
+        genres: args.genres, 
+        author: author._id 
+      });
+  
+      await newBook.save();
+      return newBook.populate('author');
+    },
+  
+    editAuthor: async (root, args, context) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('Not authenticated');
       };
 
-      return newBook
+      const author = await Author.findOne({ name: args.name });
+
+      if (!author) return null;
+
+      if (args.setBornTo < 0) {
+        throw new GraphQLError('Birth year cannot be negative.');
+      };
+
+      author.born = args.setBornTo;
+      await author.save();
+      return author;
     },
 
-    editAuthor: (root, args) => {
-      const author = authors.find(a => a.name === args.name)
-      if (!author) return null
-      author.born = args.setBornTo
-      return author
+    createUser: async (root, args) => {
+      const existingUser = await User.findOne({ username: args.username });
+    
+      if (existingUser) {
+        throw new GraphQLError('Username already exists.');
+      }
+    
+      // Haszowanie hasła przed zapisaniem
+      const saltRounds = 10; // Liczba rund haszowania
+      const hashedPassword = await bcrypt.hash(args.password, saltRounds);
+    
+      const user = new User({
+        username: args.username,
+        favoriteGenre: args.favoriteGenre,
+        password: hashedPassword // Zapisz haszowane hasło
+      });
+    
+      await user.save();
+      return user;
+    },
+
+    login: async (root, args) => {
+      const { username, password } = args;
+    
+      const user = await User.findOne({ username });
+    
+      if (!user) {
+        throw new GraphQLError('User not found.');
+      };
+    
+      const passwordIsValid = await bcrypt.compare(password, user.password);
+    
+      if (!passwordIsValid) {
+        throw new GraphQLError('Invalid password.');
+      };
+    
+      const token = jwt.sign({ username: user.username, id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+      
+      return { token: token };
     }
   }
+};
+
+// Middleware to extract user from token
+const context = async ({ req }) => {
+  const auth = req.headers.authorization;
+  if (auth && auth.toLowerCase().startsWith('bearer ')) {
+    const token = auth.substring(7);
+    const decodedToken = jwt.verify(token, JWT_SECRET);
+
+    if (decodedToken.id) {
+      const currentUser = await User.findById(decodedToken.id);
+      return { currentUser };
+    };
+  };
+
+  return {};
 };
 
 const yoga = createYoga({
   schema: createSchema({
     typeDefs,
     resolvers
-  })
+  }),
+  context
 });
 
 const server = createServer(yoga);

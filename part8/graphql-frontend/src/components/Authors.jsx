@@ -1,44 +1,32 @@
-import { useQuery, useMutation, gql } from '@apollo/client'
-import { useState } from 'react'
+import { useQuery, useMutation } from '@apollo/client';
 
-const ALL_AUTHORS = gql`
-  query {
-    allAuthors {
-      name
-      born
-      bookCount
-    }
-  }
-`
+import AuthorForm from './AuthorForm';
 
-const EDIT_AUTHOR = gql`
-  mutation editAuthor($name: String!, $setBornTo: Int!) {
-    editAuthor(name: $name, setBornTo: $setBornTo) {
-      name
-      born
-    }
-  }
-`
+import { ALL_AUTHORS } from './queries';
+import { EDIT_AUTHOR } from './mutations';
 
 const Authors = () => {
-  const result = useQuery(ALL_AUTHORS)
+  const result = useQuery(ALL_AUTHORS);
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
     refetchQueries: [{ query: ALL_AUTHORS }],
-  })
+  });
 
-  const [name, setName] = useState('')
-  const [born, setBorn] = useState('')
+  if (result.loading) return <div>loading...</div>;
 
-  if (result.loading) return <div>loading...</div>
+  const authors = result.data.allAuthors;
 
-  const authors = result.data.allAuthors
+  const submit = async (name, born) => {
+    const user = JSON.parse(localStorage.getItem('user'));
 
-  const submit = async (e) => {
-    e.preventDefault()
-    editAuthor({ variables: { name, setBornTo: Number(born) } })
-    setName('')
-    setBorn('')
-  }
+    await editAuthor({
+      variables: { name, setBornTo: born },
+      context: {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      }
+    });
+  };
 
   return (
     <div>
@@ -59,18 +47,9 @@ const Authors = () => {
           ))}
         </tbody>
       </table>
-      <h3>Set birthyear</h3>
-      <form onSubmit={submit}>
-        <div>
-          name <input value={name} onChange={({ target }) => setName(target.value)} />
-        </div>
-        <div>
-          born <input type="number" value={born} onChange={({ target }) => setBorn(target.value)} />
-        </div>
-        <button type="submit">update author</button>
-      </form>
+      <AuthorForm onSubmit={submit} />
     </div>
-  )
-}
+  );
+};
 
-export default Authors
+export default Authors;

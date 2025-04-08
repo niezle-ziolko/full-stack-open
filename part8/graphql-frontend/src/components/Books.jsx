@@ -1,25 +1,32 @@
-import { useQuery, gql } from '@apollo/client'
-
-const ALL_BOOKS = gql`
-  query {
-    allBooks {
-      title
-      author
-      published
-    }
-  }
-`
+import { useQuery } from '@apollo/client';
+import { ALL_BOOKS, ALL_GENRES, FILTER_BOOKS } from './queries';
+import React from 'react';
 
 const Books = () => {
-  const result = useQuery(ALL_BOOKS)
+  const { loading: loadingGenres, data: genresData } = useQuery(ALL_GENRES);
+  const [selectedGenre, setSelectedGenre] = React.useState(null);
 
-  if (result.loading) return <div>loading...</div>
+  const { loading: loadingBooks, data: booksData } = useQuery(selectedGenre ? FILTER_BOOKS : ALL_BOOKS, {
+    variables: selectedGenre ? { genre: selectedGenre } : undefined,
+  });
 
-  const books = result.data.allBooks
+  if (loadingGenres) return <div>Loading genres...</div>;
+  if (loadingBooks) return <div>Loading books...</div>;
+
+  const genres = genresData.allGenres;
+  const books = booksData.allBooks;
 
   return (
     <div>
-      <h2>books</h2>
+      <h2>Books</h2>
+      <div>
+        {genres.map((genre) => (
+          <button key={genre} onClick={() => setSelectedGenre(genre)}>
+            {genre}
+          </button>
+        ))}
+        <button onClick={() => setSelectedGenre(null)}>All</button>
+      </div>
       <table>
         <tbody>
           <tr>
@@ -28,16 +35,16 @@ const Books = () => {
             <th>Published</th>
           </tr>
           {books.map((b) => (
-            <tr key={b.title}>
+            <tr key={b.id}>
               <td>{b.title}</td>
-              <td>{b.author}</td>
+              <td>{b.author.name}</td>
               <td>{b.published}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
 
-export default Books
+export default Books;
