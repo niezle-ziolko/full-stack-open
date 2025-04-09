@@ -5,6 +5,7 @@ import Authors from './components/Authors';
 import NewBook from './components/NewBook';
 import LoginForm from './components/LoginForm';
 import Recommendations from './components/Recommendations';
+import BookSubscription from './components/BookSubscription';
 
 const App = () => {
   const [page, setPage] = useState('authors');
@@ -46,6 +47,8 @@ const App = () => {
       {page === 'add' && user && <NewBook />}
       {page === 'recommend' && user && <Recommendations />}
       {page === 'login' && !user && <LoginForm setUser={setUser} setPage={setPage} />}
+
+      <BookSubscription />
     </div>
   );
 };

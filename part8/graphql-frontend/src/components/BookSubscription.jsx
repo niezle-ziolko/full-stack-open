@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { gql, useSubscription } from '@apollo/client';
+import { useEffect } from 'react';
+import { gql, useSubscription, useApolloClient } from '@apollo/client';
 
 const BOOK_ADDED = gql`
   subscription {
@@ -10,22 +10,45 @@ const BOOK_ADDED = gql`
       author {
         name
       }
+      id
+    }
+  }
+`;
+
+const ALL_BOOKS = gql`
+  query {
+    allBooks {
+      title
+      published
+      genres
+      author {
+        name
+      }
+      id
     }
   }
 `;
 
 const BookSubscription = () => {
-  const { data, loading } = useSubscription(BOOK_ADDED);
+  const client = useApolloClient();
+  const { data } = useSubscription(BOOK_ADDED);
 
   useEffect(() => {
-    if (!loading && data) {
-      const book = data.bookAdded;
-      alert(`📚 Nowa książka: "${book.title}" autora ${book.author.name}`);
-      // Możesz też dodać do listy itp.
-    }
-  }, [data, loading]);
+    if (data) {
+      const newBook = data.bookAdded;
+      alert(`📚 Nowa książka: "${newBook.title}" autora ${newBook.author.name}`);
 
-  return null; // albo np. jakiś log
+      // Update local cache
+      client.cache.updateQuery({ query: ALL_BOOKS }, (oldData) => {
+        if (!oldData) return { allBooks: [newBook] };
+        return {
+          allBooks: [...oldData.allBooks, newBook],
+        };
+      });
+    }
+  }, [data, client]);
+
+  return null;
 };
 
 export default BookSubscription;

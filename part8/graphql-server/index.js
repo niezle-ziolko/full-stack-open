@@ -1,10 +1,14 @@
 require('dotenv').config();
-const { createYoga, createSchema, PubSub } = require("graphql-yoga");
+const { createYoga, createSchema } = require("graphql-yoga");
+const { PubSub } = require("graphql-subscriptions");
 const { createServer } = require("http");
+const { WebSocketServer } = require("ws");
 const { GraphQLError } = require("graphql");
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const cors = require('cors');
+const express = require('express');
 
 const { Author, Book, User } = require('./models');
 
@@ -15,6 +19,30 @@ mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD
 const JWT_SECRET = process.env.JWT_SECRET || '12345';
 
 const pubsub = new PubSub();
+const wsServer = new WebSocketServer({ noServer: true });
+
+wsServer.on('connection', (socket) => {
+  console.log('Client connected');
+
+  // Obsługuje przychodzące wiadomości
+  socket.on('message', (message) => {
+    console.log('Received:', message);
+    // Możesz dodać logikę do przetwarzania wiadomości
+  });
+
+  // Wysyłanie wiadomości powitalnej
+  socket.send('Welcome to the WebSocket server!');
+
+  // Obsługuje zamknięcie połączenia
+  socket.on('close', () => {
+    console.log('Client disconnected');
+  });
+
+  // Obsługuje błędy
+  socket.on('error', (error) => {
+    console.error('WebSocket error:', error);
+  });
+});
 
 const typeDefs = /* GraphQL */ `
   type Book {
@@ -96,12 +124,26 @@ const resolvers = {
       return await Book.find(filter).populate('author');
     },
     allAuthors: async () => {
-      const authors = await Author.find();
-      return Promise.all(authors.map(async (author) => ({
-        name: author.name,
-        born: author.born || null,
-        bookCount: await Book.countDocuments({ author: author._id })
-      })));
+      // Use aggregation to fetch authors along with their book count
+      const authors = await Author.aggregate([
+        {
+          $lookup: {
+            from: 'books', // 'books' is the collection name in MongoDB
+            localField: '_id', // _id from authors
+            foreignField: 'author', // author field in books collection
+            as: 'books' // Join books to authors
+          }
+        },
+        {
+          $project: {
+            name: 1, // Include the author's name
+            born: 1, // Include the author's born year if available
+            bookCount: { $size: '$books' } // Count the number of books per author
+          }
+        }
+      ]);
+
+      return authors;
     },
     allGenres: async () => {
       const books = await Book.find();
@@ -248,8 +290,28 @@ const yoga = createYoga({
   context
 });
 
-const server = createServer(yoga);
+const server = createServer((req, res) => {
+  yoga.handleRequest(req, res);
+});
 
-server.listen(4000, () => {
-  console.log("🚀 Server running at http://localhost:4000/graphql");
+server.on('upgrade', (request, socket, head) => {
+  wsServer.handleUpgrade(request, socket, head, (ws) => {
+    wsServer.emit('connection', ws, request);
+  });
+});
+
+const app = express();
+
+// Użyj middleware CORS
+app.use(cors({
+  origin: `${process.env.CORS_ORIGIN}`, // Zmień na odpowiedni adres źródłowy
+  credentials: true,
+}));
+
+// Użyj yoga jako middleware
+app.use('/graphql', yoga);
+
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at port: ${PORT}`);
 });
