@@ -1,16 +1,20 @@
 require('dotenv').config();
-const { createYoga, createSchema } = require("graphql-yoga");
+const { createYoga, createSchema, PubSub } = require("graphql-yoga");
 const { createServer } = require("http");
 const { GraphQLError } = require("graphql");
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-const { Author, Book, User } = require('./models'); // Ensure User model is imported
+const { Author, Book, User } = require('./models');
 
 mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ama5n.mongodb.net/?retryWrites=true&w=majority&appName=${process.env.DB_NAME}`)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB:', err));
+
+const JWT_SECRET = process.env.JWT_SECRET || '12345';
+
+const pubsub = new PubSub();
 
 const typeDefs = /* GraphQL */ `
   type Book {
@@ -42,7 +46,7 @@ const typeDefs = /* GraphQL */ `
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
-    allGenres: [String!]!  # Dodano nowe zapytanie
+    allGenres: [String!]!
     me: User
   }
 
@@ -67,9 +71,11 @@ const typeDefs = /* GraphQL */ `
       password: String!
     ): Token
   }
-`;
 
-const JWT_SECRET = process.env.JWT_SECRET || '12345'; // Use a secure secret in production
+  type Subscription {
+    bookAdded: Book!
+  }
+`;
 
 const resolvers = {
   Query: {
@@ -99,16 +105,14 @@ const resolvers = {
     },
     allGenres: async () => {
       const books = await Book.find();
-      const genres = new Set(); // Używamy Set do unikalnych gatunków
-
+      const genres = new Set();
       books.forEach(book => {
         book.genres.forEach(genre => genres.add(genre));
       });
-
-      return Array.from(genres); // Zwracamy unikalne gatunki jako tablicę
+      return Array.from(genres);
     },
     me: (root, args, context) => {
-      return context.currentUser; // Return the current user from context
+      return context.currentUser;
     }
   },
 
@@ -116,42 +120,46 @@ const resolvers = {
     addBook: async (root, args, context) => {
       if (!context.currentUser) {
         throw new GraphQLError('Not authenticated');
-      };
-  
+      }
+
       if (args.title.length < 3) {
         throw new GraphQLError('Book title must be at least 3 characters long.');
-      };
-      
+      }
+
       if (args.genres.length === 0) {
         throw new GraphQLError('At least one genre must be provided.');
-      };
-  
+      }
+
       let author = await Author.findOne({ name: args.author });
-      
+
       if (!author) {
         if (args.author.length < 3) {
           throw new GraphQLError('Author name must be at least 3 characters long.');
-        };
-
+        }
         author = new Author({ name: args.author });
         await author.save();
-      };
-  
+      }
+
       const newBook = new Book({ 
         title: args.title,
-        published: args.published, 
-        genres: args.genres, 
+        published: args.published,
+        genres: args.genres,
         author: author._id 
       });
-  
+
       await newBook.save();
-      return newBook.populate('author');
+      const populatedBook = await newBook.populate('author');
+
+      // Publish event
+      pubsub.publish('BOOK_ADDED', { bookAdded: populatedBook });
+
+      return populatedBook;
     },
-  
+
     editAuthor: async (root, args, context) => {
       if (!context.currentUser) {
         throw new GraphQLError('Not authenticated');
-      };
+      }
 
       const author = await Author.findOne({ name: args.name });
 
@@ -159,7 +167,7 @@ const resolvers = {
 
       if (args.setBornTo < 0) {
         throw new GraphQLError('Birth year cannot be negative.');
-      };
+      }
 
       author.born = args.setBornTo;
       await author.save();
@@ -168,48 +176,56 @@ const resolvers = {
 
     createUser: async (root, args) => {
       const existingUser = await User.findOne({ username: args.username });
-    
+
       if (existingUser) {
         throw new GraphQLError('Username already exists.');
       }
-    
-      // Haszowanie hasła przed zapisaniem
-      const saltRounds = 10; // Liczba rund haszowania
+
+      if (args.password.length < 6) {
+        throw new GraphQLError('Password must be at least 6 characters long.');
+      }
+
+      const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(args.password, saltRounds);
-    
+
       const user = new User({
         username: args.username,
         favoriteGenre: args.favoriteGenre,
-        password: hashedPassword // Zapisz haszowane hasło
+        password: hashedPassword
       });
-    
+
       await user.save();
       return user;
     },
 
     login: async (root, args) => {
       const { username, password } = args;
-    
+
       const user = await User.findOne({ username });
-    
+
       if (!user) {
         throw new GraphQLError('User not found.');
-      };
-    
+      }
+
       const passwordIsValid = await bcrypt.compare(password, user.password);
-    
+
       if (!passwordIsValid) {
         throw new GraphQLError('Invalid password.');
-      };
-    
+      }
+
       const token = jwt.sign({ username: user.username, id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-      
-      return { token: token };
+
+      return { token };
+    }
+  },
+
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.subscribe('BOOK_ADDED')
     }
   }
 };
 
-// Middleware to extract user from token
 const context = async ({ req }) => {
   const auth = req.headers.authorization;
   if (auth && auth.toLowerCase().startsWith('bearer ')) {
@@ -219,9 +235,8 @@ const context = async ({ req }) => {
     if (decodedToken.id) {
       const currentUser = await User.findById(decodedToken.id);
       return { currentUser };
-    };
-  };
-
+    }
+  }
   return {};
 };
 
@@ -236,5 +251,5 @@ const yoga = createYoga({
 const server = createServer(yoga);
 
 server.listen(4000, () => {
-  console.log("Server is running on http://localhost:4000/graphql");
+  console.log("🚀 Server running at http://localhost:4000/graphql");
 });
