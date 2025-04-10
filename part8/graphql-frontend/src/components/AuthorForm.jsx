@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 const AuthorForm = ({ onSubmit }) => {
-  const [name, setName] = useState('');
-  const [born, setBorn] = useState('');
+  const [name, setName] = useState("");
+  const [born, setBorn] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(name, Number(born));
-    setName('');
-    setBorn('');
+    setName("");
+    setBorn("");
   };
 
   return (

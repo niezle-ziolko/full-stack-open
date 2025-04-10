@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useMutation } from '@apollo/client';
+import { useState, useEffect } from "react";
+import { useMutation } from "@apollo/client";
 
-import { LOGIN } from './mutations';
+import { LOGIN } from "./mutations";
 
 const LoginForm = ({ setUser, setPage }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loginSuccess, setLoginSuccess] = useState(false);
 
   const [login, result] = useMutation(LOGIN, {
@@ -24,11 +24,11 @@ const LoginForm = ({ setUser, setPage }) => {
       const token = result.data.login.token;
       const loggedInUser = { username, token };
       setUser(loggedInUser);
-      localStorage.setItem('user', JSON.stringify(loggedInUser));
-      setUsername('');
-      setPassword('');
+      localStorage.setItem("user", JSON.stringify(loggedInUser));
+      setUsername("");
+      setPassword("");
       setLoginSuccess(true);
-      setPage('books');
+      setPage("books");
     };
   }, [result.data, username, password, setUser]);
 

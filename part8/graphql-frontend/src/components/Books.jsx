@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useQuery } from '@apollo/client';
+import { useState } from "react";
+import { useQuery } from "@apollo/client";
 
-import { ALL_BOOKS, ALL_GENRES, FILTER_BOOKS } from './queries';
+import { ALL_BOOKS, ALL_GENRES, FILTER_BOOKS } from "./queries";
 
 const Books = () => {
   const { loading: loadingGenres, data: genresData } = useQuery(ALL_GENRES);

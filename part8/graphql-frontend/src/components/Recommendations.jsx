@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useQuery } from '@apollo/client';
+import { useState, useEffect } from "react";
+import { useQuery } from "@apollo/client";
 
-import { MY_GENRES, FILTER_BOOKS } from './queries';
+import { MY_GENRES, FILTER_BOOKS } from "./queries";
 
 const Recommendations = () => {
   const [favoriteGenre, setFavoriteGenre] = useState(null);
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
   useEffect(() => {
     if (user) {
@@ -21,7 +21,7 @@ const Recommendations = () => {
     },
     onCompleted: (data) => {
       const updatedUser = { ...user, favoriteGenre: data.me.favoriteGenre };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
     }
   });
@@ -58,7 +58,7 @@ const Recommendations = () => {
       {favoriteGenre ? (
         <p>{favoriteGenre}</p>
       ) : (
-        <p>You don't have a favorite genre.</p>
+        <p>You don"t have a favorite genre.</p>
       )}
       <p>No books available for your favorite genre.</p>
     </div>

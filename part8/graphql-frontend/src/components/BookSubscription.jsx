@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { gql, useSubscription, useApolloClient } from '@apollo/client';
+import { useEffect } from "react";
+import { gql, useSubscription, useApolloClient } from "@apollo/client";
 
 const BOOK_ADDED = gql`
   subscription {
@@ -36,7 +36,7 @@ const BookSubscription = () => {
   useEffect(() => {
     if (data) {
       const newBook = data.bookAdded;
-      alert(`📚 Nowa książka: "${newBook.title}" autora ${newBook.author.name}`);
+      alert(`📚 New book "${newBook.title}" from author ${newBook.author.name}`);
 
       // Update local cache
       client.cache.updateQuery({ query: ALL_BOOKS }, (oldData) => {
@@ -45,7 +45,7 @@ const BookSubscription = () => {
           allBooks: [...oldData.allBooks, newBook],
         };
       });
-    }
+    };
   }, [data, client]);
 
   return null;

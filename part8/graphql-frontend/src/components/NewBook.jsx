@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { useMutation } from '@apollo/client';
+import { useState } from "react";
+import { useMutation } from "@apollo/client";
 
-import { ADD_BOOK } from './mutations';
-import { ALL_BOOKS, ALL_AUTHORS } from './queries';
+import { ADD_BOOK } from "./mutations";
+import { ALL_BOOKS, ALL_AUTHORS } from "./queries";
 
 const NewBook = () => {
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [published, setPublished] = useState('');
-  const [genre, setGenre] = useState('');
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [published, setPublished] = useState("");
+  const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
 
   const [addBook] = useMutation(ADD_BOOK, {
@@ -17,10 +17,10 @@ const NewBook = () => {
 
   const submit = async (event) => {
     event.preventDefault();
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user || !user.token) {
-      console.error('User not found or token is missing');
+      console.error("User not found or token is missing");
       return;
     };
 
@@ -42,12 +42,12 @@ const NewBook = () => {
       console.log("Book added:", data.addBook);
 
       // Reset form fields after successful submission
-      setTitle('');
-      setAuthor('');
-      setPublished('');
+      setTitle("");
+      setAuthor("");
+      setPublished("");
       setGenres([]);
-      setGenre('');
-      setPage('books');
+      setGenre("");
+      setPage("books");
     } catch (error) {
       console.error("Error adding book:", error);
     };
@@ -55,7 +55,7 @@ const NewBook = () => {
 
   const addGenre = () => {
     setGenres(genres.concat(genre));
-    setGenre('');
+    setGenre("");
   };
 
   return (
@@ -75,7 +75,7 @@ const NewBook = () => {
           <input value={genre} onChange={({ target }) => setGenre(target.value)} />
           <button onClick={addGenre} type="button">add genre</button>
         </div>
-        <div>genres: {genres.join(' ')}</div>
+        <div>genres: {genres.join(" ")}</div>
         <button type="submit">create book</button>
       </form>
     </div>
