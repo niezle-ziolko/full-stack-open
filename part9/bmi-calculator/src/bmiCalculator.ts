@@ -2,7 +2,7 @@ export interface BMIResult {
   weight: number;
   height: number;
   bmi: string;
-}
+};
 
 export const calculateBmi = (height: number, weight: number): BMIResult => {
   if (height <= 0 || weight <= 0) {
