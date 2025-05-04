@@ -1,54 +1,145 @@
-# React + TypeScript + Vite
+# Full Stack Open 2024 - Part 9: Course Parts App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a small React + TypeScript application built using Vite. It demonstrates the use of **typed props**, **component decomposition**, and **discriminated union types** in TypeScript. The app lists parts of a course, including their types and metadata, and calculates the total number of exercises.
 
-Currently, two official plugins are available:
+## 🗂️ Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The project is organized following the recommended structure for Full Stack Open submissions:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+part9/
+├── bmi-calculator
+├── patientor-backend
+├── patientor-frontend
+├── flight-diary-backend
+├── flight-diary-frontend
+└── course-typescript/
+    ├── public/
+    │   └── vite.svg
+    ├── src/
+    │   ├── assets/
+    │   │   └── react.svg
+    │   ├── components/
+    │   │   ├── Content.tsx
+    │   │   ├── Header.tsx
+    │   │   ├── Part.tsx
+    │   │   └── Total.tsx
+    │   ├── App.tsx
+    │   └── main.tsx
+    ├── .gitignore
+    ├── eslint.config.js
+    ├── index.html
+    ├── package-lock.json
+    ├── package.json 
+    ├── README.md
+    ├── tsconfig.app.json
+    ├── tsconfig.json
+    ├── tsconfig.node.json
+    └── vite.config.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+All course materials for "Patientor Backend" exercises **9.15.–9.16.** are located inside the `course-typescript` folder.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ✅ Exercises Overview
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+This section summarizes each implemented feature or requirement from the course:
+
+### 9.15
+
+- A new Vite project with React and TypeScript was created.
+- The app was initially a single `App.tsx` file with hardcoded course data.
+- The logic was refactored into three functional components:
+  - `Header`: renders the course title.
+  - `Content`: lists all course parts.
+  - `Total`: displays the total exercise count.
+- All components receive data through typed props.
+
+### 9.16
+
+- Introduced a union type `CoursePart` composed of:
+  - `CoursePartBasic`
+  - `CoursePartGroup`
+  - `CoursePartBackground`
+  - `CoursePartSpecial` (added later)
+- Created a shared base type `CoursePartWithDescription` to avoid repeating the `description` field.
+- Extracted a `Part` component to handle rendering based on the `kind` field.
+- Used `switch (part.kind)` with exhaustive type checking to ensure all variants are handled.
+- Added a new kind: `special` with a `requirements` field (array of strings).
+- Updated `Content` to render each part via the new `Part` component.
+- TypeScript now guarantees that all possible `CoursePart.kind` values are accounted for.
+
+## 📦 Type Definitions
+
+```ts
+interface CoursePartBase {
+  name: string;
+  exerciseCount: number;
+  kind: string;
+}
+
+interface CoursePartWithDescription extends CoursePartBase {
+  description: string;
+}
+
+interface CoursePartBasic extends CoursePartWithDescription {
+  kind: "basic";
+}
+
+interface CoursePartGroup extends CoursePartBase {
+  groupProjectCount: number;
+  kind: "group";
+}
+
+interface CoursePartBackground extends CoursePartWithDescription {
+  backgroundMaterial: string;
+  kind: "background";
+}
+
+interface CoursePartSpecial extends CoursePartWithDescription {
+  requirements: string[];
+  kind: "special";
+}
+
+export type CoursePart =
+  | CoursePartBasic
+  | CoursePartGroup
+  | CoursePartBackground
+  | CoursePartSpecial;
 ```
+
+## 💻 Installation and Running
+
+Follow these steps to run the project locally:
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/niezle-ziolko/full-stack-open
+```
+
+2. Navigate to the project directory:
+
+```bash
+cd part9/course-typescript
+```
+
+3. Install the dependencies:
+
+```bash
+npm install
+```
+
+4. Development mode:
+
+```bash
+npm run dev
+```
+
+The Application is available at [http://localhost:5137](http://localhost:5137).
+
+## 🧠 Notes
+
+- **Type safety** was enforced throughout using TypeScript's discriminated unions and interfaces.
+- Using `switch (kind)` inside `Part.tsx` ensures exhaustive handling, preventing future bugs when new kinds are added.
+- **Shared base** types like `CoursePartWithDescription` help reduce duplication and improve maintainability.
+- No state management or routing is used in this project — the focus is purely on **typed component communication**.

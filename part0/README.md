@@ -1,29 +1,36 @@
-# Part0 - Full Stack Open
+# Full Stack Open - Part 0
 
 This repository contains solutions for Part0 exercises (0.1–0.6) of the Full Stack Open course.
 
-## Project Structure
+## 🗂️ Project Structure
 
 All tasks for Part0 are organized under the `part0` directory. The project focuses on understanding the basic functioning of web applications by analyzing request/response cycles and user interactions through diagrams. This part does not involve writing any code for actual applications but instead emphasizes grasping fundamental concepts of how browsers and servers communicate.
 
-## Contents
+```
+part0/
+├── 0.4_new_note_diagram.md
+├── 0.5_single_page_app_diagram.md
+└── 0.6_new_note_in_spa_diagram.md
+```
 
-### 0.1: HTML
+## ✅ Exercises Overview
+
+### 0.1: HTML, step 1
 
 Reviewed the basics of HTML by reading the [Mozilla HTML tutorial](https://developer.mozilla.org/en-US/docs/Learn/HTML).  
 No files were submitted for this exercise, as it was reading-only.
 
-### 0.2: CSS
+### 0.2: CSS, step 2
 
 Reviewed the basics of CSS by reading the [Mozilla CSS tutorial](https://developer.mozilla.org/en-US/docs/Learn/CSS).  
 No files were submitted for this exercise, as it was reading-only.
 
-### 0.3: HTML Forms
+### 0.3: HTML Forms, step 3
 
 Learned the basics of HTML forms by reading [Mozilla's Your first form tutorial](https://developer.mozilla.org/en-US/docs/Learn/Forms/Your_first_form).  
 No files were submitted for this exercise, as it was reading-only.
 
-### 0.4: New Note Diagram
+### 0.4: New Note Diagram, step 4
 
 Created a diagram illustrating what happens when a user writes a new note and clicks the Save button on the [notes application page](https://studies.cs.helsinki.fi/exampleapp/notes).  
 The diagram was made using the Mermaid syntax and demonstrates the following steps:
@@ -32,7 +39,7 @@ The diagram was made using the Mermaid syntax and demonstrates the following ste
 - Server processes the new note and responds.
 - Browser reloads or re-renders the list of notes with the new addition.
 
-### 0.5: Single Page App Diagram
+### 0.5: Single Page App Diagram, step 5
 
 Created a diagram illustrating the events when a user accesses the [single-page app version](https://studies.cs.helsinki.fi/exampleapp/spa) of the notes application.  
 The diagram depicts:
@@ -41,7 +48,7 @@ The diagram depicts:
 - JavaScript runs in the browser and fetches the existing notes data.
 - The app dynamically renders the content without additional page reloads.
 
-### 0.6: New Note in Single Page App Diagram
+### 0.6: New Note in Single Page App Diagram, step 6
 
 Created a diagram showing what happens when a user creates a new note in the single-page version of the notes application.  
 The process includes:
@@ -50,12 +57,7 @@ The process includes:
 - Server responds confirming the note was received.
 - JavaScript updates the page dynamically to include the new note without a full page reload.
 
-## How to View Diagrams
-
-All diagrams were created using [Mermaid syntax](https://mermaid-js.github.io/mermaid/#/).  
-To view the diagrams properly, GitHub's Markdown rendering must be used or any Markdown viewer that supports Mermaid diagrams.
-
-## Notes
+## 🧠 Notes
 
 - Exercises were submitted part-by-part as required. Once exercises for a part were submitted, no further modifications were made.
 - If the repository is private, the user `mluukkai` has been added as a collaborator.
